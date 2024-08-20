@@ -15,18 +15,18 @@ import (
 )
 
 type GeminiClient struct {
+	Client              *genai.Client
+	Functions           map[string]reflect.Value // For custom functions that the LLM can call
 	ModelName           string
 	MultiModalModelName string
 	ProjectLocation     string
 	ProjectID           string
-	Client              *genai.Client
+	Tools               []*genai.Tool
+	Parts               []genai.Part
 	Timeout             time.Duration
 	Temperature         float32
-	Tools               []*genai.Tool
-	Functions           map[string]reflect.Value // For custom functions that the LLM can call
 	Trim                bool
 	Verbose             bool
-	Parts               []genai.Part
 }
 
 const (
