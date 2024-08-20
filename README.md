@@ -35,7 +35,7 @@ func main() {
 }
 ```
 
-7. Prepare a `go.mod` file for with `go mod init cows`
+7. Prepare a simple `go.mod` project file with ie. `go mod init cows`
 8. Fetch the dependencies (this simplegemini package) with `go mod tidy`
 9. Build and run the executable: `go build && ./cows`
 10. Observe the output, that should look a bit like this:
