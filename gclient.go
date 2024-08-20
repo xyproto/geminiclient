@@ -92,9 +92,9 @@ func NewText(modelName, projectLocation, projectID string, temperature float32) 
 	return NewCustom(modelName, defaultMultiModalModelName, projectLocation, projectID, temperature, defaultTimeout)
 }
 
-func MustNewText(temperature float32) *GeminiClient {
+func MustNewText(modelName string, temperature float32) *GeminiClient {
 	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead
-	gc, err := NewText(defaultModelName, defaultProjectLocation, defaultProjectID, temperature)
+	gc, err := NewText(modelName, defaultProjectLocation, defaultProjectID, temperature)
 	if err != nil {
 		panic(err)
 	}
