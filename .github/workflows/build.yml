@@ -1,4 +1,4 @@
-name: Build
+name: Go Build and Test
 
 on:
   push:
@@ -22,6 +22,19 @@ jobs:
       with:
         go-version: 1.23
 
+    - name: Authenticate to Google Cloud
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+    - name: Set up gcloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+
     - name: Install dependencies
       run: go mod tidy
 
@@ -29,4 +42,6 @@ jobs:
       run: go build -v ./...
 
     - name: Run tests
+      env:
+        GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
       run: go test -v ./...
