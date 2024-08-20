@@ -2,7 +2,7 @@
 
 # Simple Gemini
 
-A simple and fun way to use Gemini, an AI API from Google.
+A simple and fun way to use Gemini.
 
 ## Main features
 
