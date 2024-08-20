@@ -116,7 +116,7 @@ func MustNewWithTimeout(modelName string, temperature float32, timeout time.Dura
 }
 
 func (gc *GeminiClient) Query(prompt string) (string, error) {
-	return gc.MultiQuery(prompt, nil, nil)
+	return gc.MultiQuery(prompt, nil, nil, nil)
 }
 
 func Ask(prompt string, temperature float32) (string, error) {

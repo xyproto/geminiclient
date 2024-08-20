@@ -61,7 +61,7 @@ func (gc *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 
 // MultiQuery processes a prompt with optional base64-encoded data and MIME type for the data,
 // and supports function tools (ftools) by parsing the response and calling the user-supplied functions
-func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *string) (string, error) {
+func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *string, temperature *float32) (string, error) {
 	if strings.TrimSpace(prompt) == "" {
 		return "", ErrEmptyPrompt
 	}
@@ -83,6 +83,9 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 
 	// Set up the model with tools and start a chat session
 	model := gc.Client.GenerativeModel(gc.ModelName)
+	if temperature != nil {
+		model.SetTemperature(*temperature)
+	}
 	model.Tools = gc.Tools
 	session := model.StartChat()
 
