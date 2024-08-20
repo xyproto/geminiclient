@@ -3,7 +3,6 @@ package simplegemini
 import (
 	"fmt"
 	"io"
-	"log"
 	"mime"
 	"net/http"
 	"os"
@@ -43,7 +42,7 @@ func (gc *GeminiClient) AddImage(filename string) error {
 // terminating the program if adding the image fails.
 func (gc *GeminiClient) MustAddImage(filename string) {
 	if err := gc.AddImage(filename); err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 }
 

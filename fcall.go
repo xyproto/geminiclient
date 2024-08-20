@@ -3,12 +3,15 @@ package simplegemini
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 
 	"cloud.google.com/go/vertexai/genai"
 )
+
+var ErrEmptyPrompt = errors.New("empty prompt")
 
 // AddFunctionTool allows users to add a custom Go function as a tool for the model
 func (sf *GeminiClient) AddFunctionTool(name, description string, fn interface{}) error {
@@ -59,6 +62,10 @@ func (sf *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 // QueryGemini processes a prompt with optional base64-encoded data and MIME type for the data,
 // and supports function tools (ftools) by parsing the response and calling the user-supplied functions
 func (sf *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *string) (string, error) {
+	if strings.TrimSpace(prompt) == "" {
+		return "", ErrEmptyPrompt
+	}
+
 	sf.ClearParts()
 	sf.AddText(prompt)
 
