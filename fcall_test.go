@@ -128,7 +128,7 @@ func TestEmptyPrompt(t *testing.T) {
 
 	// Query Gemini with an empty prompt
 	_, err := gc.Query("")
-	if err == nil { // sucess
+	if err == nil { // success
 		t.Fatal("Expected an error when passing in an empty prompt.")
 	}
 }
