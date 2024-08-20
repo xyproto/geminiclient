@@ -44,6 +44,18 @@ Chewing grass in sunlit fields,
 Mooing gentle song.
 ```
 
+### Function calling
+
+```
+
+
+
+### Multimodal prompts
+
+```
+```
+
+
 ### Environment variables
 
 These environment variables are supported:
