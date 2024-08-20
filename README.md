@@ -6,7 +6,7 @@ A simple and fun way to use Gemini, an AI API from Google.
 
 ## Main features
 
-* Supports handing over a prompt and receiving a response.
+* Can submit a prompt and receive a response.
 * Can run both locally (calling the Gemini API) and in Google Cloud (for example as a Google Cloud Run instance).
 * Supports multi-modal prompts (prompts where you can add text, images or data to the prompt).
 * Supports tool / function calling where you can supply custom Go functions to the Gemini client, and Gemini can call the functions as needed.
