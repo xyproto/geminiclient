@@ -162,3 +162,85 @@ func TestAddURLInvalid(t *testing.T) {
 		t.Errorf("Expected error '%s', but got: %v", expectedErr, err)
 	}
 }
+
+func TestMultipleFunctionCalls(t *testing.T) {
+	gc := simplegemini.MustNew()
+
+	// Define custom functions
+	getWeatherRightNow := func(location string) string {
+		fmt.Println("getWeatherRightNow was called")
+		switch location {
+		case "NY":
+			return "It's sunny in New York."
+		case "London":
+			return "It's rainy in London."
+		default:
+			return "Weather data not available."
+		}
+	}
+
+	reverseString := func(input string) string {
+		fmt.Println("reverseString was called")
+		runes := []rune(input)
+		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+			runes[i], runes[j] = runes[j], runes[i]
+		}
+		return string(runes)
+	}
+
+	doubleNumber := func(number int) int {
+		fmt.Println("doubleNumber was called")
+		return number * 2
+	}
+
+	checkEven := func(number int) string {
+		fmt.Println("checkEven was called")
+		if number%2 == 0 {
+			return "Even"
+		}
+		return "Odd"
+	}
+
+	// Add the functions as tools
+	err := gc.AddFunctionTool("get_weather_right_now", "Get the current weather for a specific location", getWeatherRightNow)
+	if err != nil {
+		t.Fatalf("Failed to add function tool: %v", err)
+	}
+
+	err = gc.AddFunctionTool("reverse_string", "Reverse the given string", reverseString)
+	if err != nil {
+		t.Fatalf("Failed to add function tool: %v", err)
+	}
+
+	// Test with just two functions first
+	err = gc.AddFunctionTool("double_number", "Double the given number", doubleNumber)
+	if err != nil {
+		t.Fatalf("Failed to add function tool: %v", err)
+	}
+
+	err = gc.AddFunctionTool("check_even", "Check if a number is even or odd", checkEven)
+	if err != nil {
+		t.Fatalf("Failed to add function tool: %v", err)
+	}
+
+	// Query Gemini with a prompt that could trigger one of the functions
+	result, err := gc.Query("Is the number 42 even? What is the weather in NY? Also, double the number 21.")
+	if err != nil {
+		t.Fatalf("Failed to query Gemini: %v", err)
+	}
+
+	// Check the response for all expected outcomes
+	if !strings.Contains(result, "Even") {
+		t.Errorf("Expected 'Even' in the response, but got: %v", result)
+	}
+
+	if !strings.Contains(result, "sunny") {
+		t.Errorf("Expected 'sunny' in the response, but got: %v", result)
+	}
+
+	if !strings.Contains(result, "42") {
+		t.Errorf("Expected '42' in the response, but got: %v", result)
+	}
+
+	fmt.Println("Multiple Functions AI Response:", result)
+}
