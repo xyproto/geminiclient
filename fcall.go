@@ -59,9 +59,9 @@ func (gc *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 	return nil
 }
 
-// QueryGemini processes a prompt with optional base64-encoded data and MIME type for the data,
+// MultiQuery processes a prompt with optional base64-encoded data and MIME type for the data,
 // and supports function tools (ftools) by parsing the response and calling the user-supplied functions
-func (gc *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *string) (string, error) {
+func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *string) (string, error) {
 	if strings.TrimSpace(prompt) == "" {
 		return "", ErrEmptyPrompt
 	}
@@ -180,6 +180,7 @@ func mapGoTypeToGenaiType(goType reflect.Type) genai.Type {
 	}
 }
 
-func (gc *GeminiClient) ClearFunctions() {
+func (gc *GeminiClient) ClearToolsAndFunctions() {
 	gc.Functions = make(map[string]reflect.Value)
+	gc.Tools = []*genai.Tool{}
 }

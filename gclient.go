@@ -116,7 +116,7 @@ func MustNewWithTimeout(modelName string, temperature float32, timeout time.Dura
 }
 
 func (gc *GeminiClient) Query(prompt string) (string, error) {
-	return gc.QueryGemini(prompt, nil, nil)
+	return gc.MultiQuery(prompt, nil, nil)
 }
 
 func Ask(prompt string, temperature float32) (string, error) {
@@ -124,7 +124,7 @@ func Ask(prompt string, temperature float32) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	result, err := gc.QueryGemini(prompt, nil, nil)
+	result, err := gc.Query(prompt)
 	if err != nil {
 		return "", err
 	}
@@ -237,4 +237,9 @@ func (gc *GeminiClient) CountTextTokens(prompt string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
 	return gc.CountTextTokensWithClient(ctx, gc.Client, prompt)
+}
+
+func (gc *GeminiClient) Clear() {
+	gc.ClearParts() // Not really needed, since Query also calls this
+	gc.ClearToolsAndFunctions()
 }

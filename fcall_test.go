@@ -47,7 +47,7 @@ func TestCustomFunction(t *testing.T) {
 	}
 
 	// Query Gemini with a prompt that requires using a tool
-	result, err := gc.QueryGemini("What is the weather in NY?", nil, nil)
+	result, err := gc.Query("What is the weather in NY?")
 	if err != nil {
 		t.Fatalf("Failed to query Gemini: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestReverseStringFunction(t *testing.T) {
 	}
 
 	// Query Gemini with a prompt that requires using the reverse_string function
-	result, err := gc.QueryGemini("Reverse the string 'hello'. Reply with a single word.", nil, nil)
+	result, err := gc.Query("Reverse the string 'hello'. Reply with a single word.")
 	if err != nil {
 		t.Fatalf("Failed to query Gemini: %v", err)
 	}
@@ -98,7 +98,7 @@ func TestNoFunctionsRegistered(t *testing.T) {
 	gc := simplegemini.MustNew()
 
 	// Query Gemini with a prompt without any registered functions
-	result, err := gc.QueryGemini("What is the capital of France? Reply with a single word.", nil, nil)
+	result, err := gc.Query("What is the capital of France? Reply with a single word.")
 	if err != nil {
 		t.Fatalf("Failed to query Gemini: %v", err)
 	}
@@ -127,7 +127,7 @@ func TestEmptyPrompt(t *testing.T) {
 	gc := simplegemini.MustNew()
 
 	// Query Gemini with an empty prompt
-	_, err := gc.QueryGemini("", nil, nil)
+	_, err := gc.Query("")
 	if err == nil { // sucess
 		t.Fatal("Expected an error when passing in an empty prompt.")
 	}
