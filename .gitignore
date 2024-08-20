@@ -3,7 +3,8 @@
 *.swp
 *.tmp
 .DS_Store
+cmd/fcall/fcall
 cmd/frog/frog
 cmd/haiku/haiku
-cmd/simplejson/simplejson
+cmd/json/json
 include.txt
