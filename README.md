@@ -1,4 +1,4 @@
-[![Build](https://github.com/xyproto/simplegemini/actions/workflows/build.yml/badge.svg)](https://github.com/xyproto/simplegemini/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/xyproto/simplegemini)](https://goreportcard.com/report/github.com/xyproto/simplegemini) [![License](https://img.shields.io/badge/license-Apache2-green.svg?style=flat)](https://raw.githubusercontent.com/xyproto/simplegemini/main/LICENSE)
+[![Build](https://github.com/xyproto/simplegemini/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyproto/simplegemini/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/xyproto/simplegemini)](https://goreportcard.com/report/github.com/xyproto/simplegemini) [![License](https://img.shields.io/badge/license-Apache2-green.svg?style=flat)](https://raw.githubusercontent.com/xyproto/simplegemini/main/LICENSE)
 
 # Simple Gemini
 
