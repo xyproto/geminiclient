@@ -14,7 +14,7 @@ import (
 var ErrEmptyPrompt = errors.New("empty prompt")
 
 // AddFunctionTool allows users to add a custom Go function as a tool for the model
-func (sf *GeminiClient) AddFunctionTool(name, description string, fn interface{}) error {
+func (gc *GeminiClient) AddFunctionTool(name, description string, fn interface{}) error {
 	fnValue := reflect.ValueOf(fn)
 	fnType := fnValue.Type()
 
@@ -38,7 +38,7 @@ func (sf *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 	}
 
 	// Register the function in the internal map with the name as the key
-	sf.Functions[name] = fnValue
+	gc.Functions[name] = fnValue
 
 	// Create the function declaration and tool
 	functionDecl := &genai.FunctionDeclaration{
@@ -54,20 +54,20 @@ func (sf *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 	tool := &genai.Tool{
 		FunctionDeclarations: []*genai.FunctionDeclaration{functionDecl},
 	}
-	sf.Tools = append(sf.Tools, tool)
+	gc.Tools = append(gc.Tools, tool)
 
 	return nil
 }
 
 // QueryGemini processes a prompt with optional base64-encoded data and MIME type for the data,
 // and supports function tools (ftools) by parsing the response and calling the user-supplied functions
-func (sf *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *string) (string, error) {
+func (gc *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *string) (string, error) {
 	if strings.TrimSpace(prompt) == "" {
 		return "", ErrEmptyPrompt
 	}
 
-	sf.ClearParts()
-	sf.AddText(prompt)
+	gc.ClearParts()
+	gc.AddText(prompt)
 
 	// If base64Data and dataMimeType are provided, decode the data and add it to the multimodal instance
 	if base64Data != nil && dataMimeType != nil {
@@ -75,15 +75,15 @@ func (sf *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *str
 		if err != nil {
 			return "", fmt.Errorf("failed to decode base64 data: %v", err)
 		}
-		sf.AddData(*dataMimeType, data)
+		gc.AddData(*dataMimeType, data)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), sf.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
 
 	// Set up the model with tools and start a chat session
-	model := sf.Client.GenerativeModel(sf.ModelName)
-	model.Tools = sf.Tools
+	model := gc.Client.GenerativeModel(gc.ModelName)
+	model.Tools = gc.Tools
 	session := model.StartChat()
 
 	// Submit the multimodal query and process the result
@@ -96,7 +96,7 @@ func (sf *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *str
 	for _, part := range res.Candidates[0].Content.Parts {
 		if funcall, ok := part.(genai.FunctionCall); ok {
 			// Invoke the user-defined function using reflection
-			responseData, err := sf.invokeFunction(funcall.Name, funcall.Args)
+			responseData, err := gc.invokeFunction(funcall.Name, funcall.Args)
 			if err != nil {
 				return "", fmt.Errorf("failed to handle function call: %v", err)
 			}
@@ -124,7 +124,7 @@ func (sf *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *str
 	}
 
 	// Handle the usual case where no function call is made
-	result, err := sf.SubmitToClient(ctx)
+	result, err := gc.SubmitToClient(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to process response: %v", err)
 	}
@@ -133,8 +133,8 @@ func (sf *GeminiClient) QueryGemini(prompt string, base64Data, dataMimeType *str
 }
 
 // invokeFunction uses reflection to call the appropriate user-defined function based on the AI's request
-func (sf *GeminiClient) invokeFunction(name string, args map[string]any) (map[string]any, error) {
-	fn, exists := sf.Functions[name]
+func (gc *GeminiClient) invokeFunction(name string, args map[string]any) (map[string]any, error) {
+	fn, exists := gc.Functions[name]
 	if !exists {
 		return nil, fmt.Errorf("function %s not found", name)
 	}
@@ -178,4 +178,8 @@ func mapGoTypeToGenaiType(goType reflect.Type) genai.Type {
 	default: // default to a string type
 		return genai.TypeString
 	}
+}
+
+func (gc *GeminiClient) ClearFunctions() {
+	gc.Functions = make(map[string]reflect.Value)
 }
