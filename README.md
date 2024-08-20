@@ -17,7 +17,7 @@ A simple and fun way to use Gemini, an AI API from Google.
 2. Get the Google Project ID at https://console.cloud.google.com/.
 3. `export GCP_PROJECT=123`, where "123" is your own Google Project ID.
 4. (optionally) `export GCP_LOCATION=us-west1`, if "us-west1" is the location you prefer.
-5. Create a directory for this experiment, for instance: `mkdir ~/geminitest` and then `cd ~/geminitest`.
+5. Create a directory for this experiment, for instance: `mkdir -p ~/geminitest && cd ~/geminitest`.
 6. Create a `main.go` file that looks like this:
 
 
