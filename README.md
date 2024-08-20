@@ -11,6 +11,11 @@ A simple and fun way to use Gemini, an AI API from Google.
 * Supports multi-modal prompts (prompts where you can add text, images or data to the prompt).
 * Supports tool / function calling where you can supply custom Go functions to the Gemini client, and Gemini can call the functions as needed.
 
+## Work in progress
+
+* This package is a work in progress!
+* One currently known issue is that when adding more than 1 tool/function, it appears to not work. See also the `multicall` branch.
+
 ## Example use
 
 1. Run `gcloud auth application-default login`, if needed.
