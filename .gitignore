@@ -1,0 +1,9 @@
+*.bak
+*.o
+*.swp
+*.tmp
+.DS_Store
+cmd/frog/frog
+cmd/haiku/haiku
+cmd/simplejson/simplejson
+include.txt
