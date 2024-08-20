@@ -1,3 +1,5 @@
+![Build](https://github.com/xyproto/simplegemini/workflows/Build/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/xyproto/simplegemini)](https://goreportcard.com/report/github.com/xyproto/simplegemini) [![License](https://img.shields.io/badge/license-Apache2-green.svg?style=flat)](https://raw.githubusercontent.com/xyproto/simplegemini/main/LICENSE)
+
 # Simple Gemini
 
 A simple and fun way to use Gemini, an AI API from Google.
