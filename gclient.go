@@ -46,7 +46,7 @@ var (
 )
 
 func NewCustom(modelName, multiModalModelName, projectLocation, projectID string, temperature float32, timeout time.Duration) (*GeminiClient, error) {
-	sf := &GeminiClient{
+	gc := &GeminiClient{
 		ModelName:           env.Str("MODEL_NAME", modelName),
 		MultiModalModelName: env.Str("MULTI_MODAL_MODEL_NAME", multiModalModelName),
 		ProjectLocation:     env.StrAlt("GCP_LOCATION", "PROJECT_LOCATION", projectLocation),
@@ -59,7 +59,7 @@ func NewCustom(modelName, multiModalModelName, projectLocation, projectID string
 		Verbose:             defaultVerbose,
 		Parts:               make([]genai.Part, 0),
 	}
-	if sf.ProjectID == "" {
+	if gc.ProjectID == "" {
 		return nil, ErrGoogleCloudProjectID
 	}
 	ctx := context.Background()
@@ -67,12 +67,12 @@ func NewCustom(modelName, multiModalModelName, projectLocation, projectID string
 	if err != nil {
 		return nil, fmt.Errorf("failed to obtain default credentials: %v", err)
 	}
-	genaiClient, err := genai.NewClient(ctx, sf.ProjectID, sf.ProjectLocation, option.WithCredentials(creds))
+	genaiClient, err := genai.NewClient(ctx, gc.ProjectID, gc.ProjectLocation, option.WithCredentials(creds))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create genai client: %v", err)
 	}
-	sf.Client = genaiClient
-	return sf, nil
+	gc.Client = genaiClient
+	return gc, nil
 }
 
 func New(modelName string, temperature float32) (*GeminiClient, error) {
