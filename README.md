@@ -19,7 +19,7 @@ A simple and fun way to use Gemini.
 ## Example use
 
 1. Run `gcloud auth application-default login`, if needed.
-2. Get the Google Project ID at https://console.cloud.google.com/.
+2. Get the Google Project ID at https://console.cloud.google.com/. The Vertex AI API might also need to be enabled.
 3. `export GCP_PROJECT=123`, where "123" is your own Google Project ID.
 4. (optionally) `export GCP_LOCATION=us-west1`, if "us-west1" is the location you prefer.
 5. Create a directory for this experiment, for instance: `mkdir -p ~/geminitest && cd ~/geminitest`.
