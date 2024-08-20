@@ -4,14 +4,14 @@
 
 A simple and fun way to use Gemini, an AI API from Google.
 
-### Main features
+## Main features
 
 * Supports handing over a prompt and receiving a response.
 * Can run both locally (calling the Gemini API) and in Google Cloud (for example as a Google Cloud Run instance).
 * Supports multi-modal prompts (prompts where you can add text, images or data to the prompt).
 * Supports tool / function calling where you can supply custom Go functions to the Gemini client, and Gemini can call the functions as needed.
 
-### Example use
+## Example use
 
 1. Run `gcloud auth application-default login`, if needed.
 2. Get the Google Project ID at https://console.cloud.google.com/.
@@ -46,7 +46,7 @@ Chewing grass in sunlit fields,
 Mooing gentle song.
 ```
 
-### Function calling / tool use
+## Function calling / tool use
 
 ```go
 package main
@@ -127,7 +127,7 @@ func main() {
 ```
 
 
-### Multimodal prompts / analyzing images
+## Multimodal prompts / analyzing images
 
 ```go
 package main
@@ -184,7 +184,7 @@ func main() {
 }
 ```
 
-### Producing JSON
+## Producing JSON
 
 ```go
 package main
@@ -221,7 +221,7 @@ func main() {
 }
 ```
 
-### Environment variables
+## Environment variables
 
 These environment variables are supported:
 
@@ -230,7 +230,7 @@ These environment variables are supported:
 * `MODEL_NAME` for the Gemini model name (like `gemini-1.5-flash` or `gemini-1.5-pro`)
 * `MULTI_MODAL_MODEL_NAME` for the Gemini multi-modal name (like `gemini-1.0-pro-vision`)
 
-### General info
+## General info
 
 * Version: 1.1.0
 * License: Apache 2
