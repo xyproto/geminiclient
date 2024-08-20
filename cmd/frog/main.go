@@ -15,27 +15,27 @@ func main() {
 		descriptionPrompt   = "Describe what is common for these two images."
 	)
 
-	ge, err := simplegemini.NewMultiModal(multiModalModelName, temperature)
+	gc, err := simplegemini.NewMultiModal(multiModalModelName, temperature)
 	if err != nil {
 		log.Fatalf("Could not initialize the Gemini client with the %s model: %v\n", multiModalModelName, err)
 	}
 
 	// Build a prompt
-	if err := ge.AddImage("frog.png"); err != nil {
+	if err := gc.AddImage("frog.png"); err != nil {
 		log.Fatalf("Could not add frog.png: %v\n", err)
 	}
-	ge.AddURI("gs://generativeai-downloads/images/scones.jpg")
-	ge.AddText(descriptionPrompt)
+	gc.AddURI("gs://generativeai-downloads/images/scones.jpg")
+	gc.AddText(descriptionPrompt)
 
 	// Count the tokens that are about to be sent
-	tokenCount, err := ge.CountTokens()
+	tokenCount, err := gc.CountTokens()
 	if err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Printf("Sending %d tokens.\n\n", tokenCount)
 
 	// Submit the images and the text prompt
-	response, err := ge.Submit()
+	response, err := gc.Submit()
 	if err != nil {
 		log.Fatalln(err)
 	}

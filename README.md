@@ -147,27 +147,27 @@ func main() {
         descriptionPrompt   = "Describe what is common for these two images."
     )
 
-    ge, err := simplegemini.NewMultiModal(multiModalModelName, temperature)
+    gc, err := simplegemini.NewMultiModal(multiModalModelName, temperature)
     if err != nil {
         log.Fatalf("Could not initialize the Gemini client with the %s model: %v\n", multiModalModelName, err)
     }
 
     // Build a prompt
-    if err := ge.AddImage("frog.png"); err != nil {
+    if err := gc.AddImage("frog.png"); err != nil {
         log.Fatalf("Could not add frog.png: %v\n", err)
     }
-    ge.AddURI("gs://generativeai-downloads/images/scones.jpg")
-    ge.AddText(descriptionPrompt)
+    gc.AddURI("gs://generativeai-downloads/images/scones.jpg")
+    gc.AddText(descriptionPrompt)
 
     // Count the tokens that are about to be sent
-    tokenCount, err := ge.CountTokens()
+    tokenCount, err := gc.CountTokens()
     if err != nil {
         log.Fatalln(err)
     }
     fmt.Printf("Sending %d tokens.\n\n", tokenCount)
 
     // Submit the images and the text prompt
-    response, err := ge.Submit()
+    response, err := gc.Submit()
     if err != nil {
         log.Fatalln(err)
     }
@@ -200,19 +200,19 @@ import (
 func main() {
     const (
         prompt      = `What color is the sky? Answer with a JSON struct where the only key is "color" and the value is a lowercase string.`
-        modelName   = "gemini-1.5-pro" // "gemini-1.5-flash"
+        modelName   = "gemini-1.5-pro"
         temperature = 0.0
         timeout     = 10 * time.Second
     )
 
-    geminiClient, err := simplegemini.NewWithTimeout(modelName, temperature, timeout)
+    gc, err := simplegemini.NewWithTimeout(modelName, temperature, timeout)
     if err != nil {
         log.Fatalln(err)
     }
 
     fmt.Println(prompt)
 
-    result, err := geminiClient.Query(prompt)
+    result, err := gc.Query(prompt)
     if err != nil {
         log.Fatalln(err)
     }
@@ -220,6 +220,9 @@ func main() {
     fmt.Println(result)
 }
 ```
+
+* `gemini-1.5-flash` is the default model.
+* `gemini-1.5-pro` is smarter, but slower and more expensive.
 
 ## Environment variables
 
