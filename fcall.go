@@ -51,19 +51,11 @@ func (gc *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 		},
 	}
 
-	// Check if a tool already exists and add to it, or create a new tool.
-	toolFound := false
-	for _, tool := range gc.Tools {
-		tool.FunctionDeclarations = append(tool.FunctionDeclarations, functionDecl)
-		toolFound = true
-		break
+	// Add the function declaration to the tool list.
+	tool := &genai.Tool{
+		FunctionDeclarations: []*genai.FunctionDeclaration{functionDecl},
 	}
-	if !toolFound {
-		tool := &genai.Tool{
-			FunctionDeclarations: []*genai.FunctionDeclaration{functionDecl},
-		}
-		gc.Tools = append(gc.Tools, tool)
-	}
+	gc.Tools = append(gc.Tools, tool)
 
 	return nil
 }
@@ -90,7 +82,7 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
 
-	// Set up the model with tools and start a chat session.
+	// Initialize a new chat session for each query to ensure proper handling.
 	model := gc.Client.GenerativeModel(gc.ModelName)
 	if temperature != nil {
 		model.SetTemperature(*temperature)
@@ -105,7 +97,7 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 	}
 
 	// Handle function calls if present.
-	var finalResult string
+	var finalResult strings.Builder
 	for _, part := range res.Candidates[0].Content.Parts {
 		if funcall, ok := part.(genai.FunctionCall); ok {
 			// Invoke the user-defined function using reflection.
@@ -113,7 +105,8 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 			if err != nil {
 				return "", fmt.Errorf("failed to handle function call '%s': %v", funcall.Name, err)
 			}
-			// Send the function response back to the model.
+
+			// Send the function response back to the model immediately.
 			res, err = session.SendMessage(ctx, genai.FunctionResponse{
 				Name:     funcall.Name,
 				Response: responseData,
@@ -121,25 +114,28 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 			if err != nil {
 				return "", fmt.Errorf("failed to send function response for '%s': %v", funcall.Name, err)
 			}
+
+			// Process and collect the final result.
 			for _, part := range res.Candidates[0].Content.Parts {
-				stringPart := fmt.Sprintf("%v", part)
-				if stringPart != "" {
-					finalResult += fmt.Sprintf("%s\n", stringPart)
+				if stringPart := fmt.Sprintf("%v", part); stringPart != "" {
+					finalResult.WriteString(stringPart)
+					finalResult.WriteString("\n")
 				}
 			}
+			break // Exit after handling one function call and response
 		}
 	}
 
 	// If no function call was made, return the response directly.
-	if finalResult == "" {
+	if finalResult.Len() == 0 {
 		result, err := gc.SubmitToClient(ctx)
 		if err != nil {
 			return "", fmt.Errorf("failed to process response: %v", err)
 		}
-		finalResult = result
+		finalResult.WriteString(result)
 	}
 
-	return strings.TrimSpace(finalResult), nil
+	return strings.TrimSpace(finalResult.String()), nil
 }
 
 // invokeFunction uses reflection to call the appropriate user-defined function based on the AI's request.

@@ -164,7 +164,7 @@ func TestAddURLInvalid(t *testing.T) {
 }
 
 func TestMultipleFunctionCalls(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := simplegemini.MustNewText("gemini-1.5-pro", 0.0)
 
 	// Define custom functions
 	getWeatherRightNow := func(location string) string {
