@@ -2,6 +2,7 @@ package simplegemini_test
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -42,4 +43,6 @@ func TestSubmitToClientStreaming(t *testing.T) {
 	if !strings.Contains(streamedContent.String(), "magic backpack") {
 		t.Fatalf("Expected streamed content to contain 'magic backpack', but it didn't")
 	}
+
+	fmt.Println("streamed content: " + streamedContent.String())
 }
