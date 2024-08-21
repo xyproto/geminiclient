@@ -13,23 +13,24 @@ import (
 
 var ErrEmptyPrompt = errors.New("empty prompt")
 
-// AddFunctionTool allows users to add a custom Go function as a tool for the model
+// FunctionCallHandler defines a callback type for handling function responses.
+type FunctionCallHandler func(response map[string]any) (map[string]any, error)
+
+// AddFunctionTool registers a custom Go function as a tool that the model can call.
 func (gc *GeminiClient) AddFunctionTool(name, description string, fn interface{}) error {
 	fnValue := reflect.ValueOf(fn)
 	fnType := fnValue.Type()
 
-	// Validate that the function is of the correct type
 	if fnType.Kind() != reflect.Func {
 		return fmt.Errorf("provided argument is not a function")
 	}
 
-	// Create a function declaration based on the function's signature
 	parameters := make(map[string]*genai.Schema)
 	var required []string
 
 	for i := 0; i < fnType.NumIn(); i++ {
 		paramType := fnType.In(i)
-		paramName := fmt.Sprintf("param%d", i+1) // param names are generated as "param1", "param2", etc.
+		paramName := fmt.Sprintf("param%d", i+1)
 
 		parameters[paramName] = &genai.Schema{
 			Type: mapGoTypeToGenaiType(paramType),
@@ -37,10 +38,8 @@ func (gc *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 		required = append(required, paramName)
 	}
 
-	// Register the function in the internal map with the name as the key
 	gc.Functions[name] = fnValue
 
-	// Create the function declaration and tool
 	functionDecl := &genai.FunctionDeclaration{
 		Name:        name,
 		Description: description,
@@ -59,9 +58,8 @@ func (gc *GeminiClient) AddFunctionTool(name, description string, fn interface{}
 	return nil
 }
 
-// MultiQuery processes a prompt with optional base64-encoded data and MIME type for the data,
-// and supports function tools (ftools) by parsing the response and calling the user-supplied functions
-func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *string, temperature *float32) (string, error) {
+// MultiQueryWithCallbacks processes a prompt, supports function tools, and uses a callback function to handle function responses.
+func (gc *GeminiClient) MultiQueryWithCallbacks(prompt string, base64Data, dataMimeType *string, temperature *float32, callback FunctionCallHandler) (string, error) {
 	if strings.TrimSpace(prompt) == "" {
 		return "", ErrEmptyPrompt
 	}
@@ -69,7 +67,6 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 	gc.ClearParts()
 	gc.AddText(prompt)
 
-	// If base64Data and dataMimeType are provided, decode the data and add it to the multimodal instance
 	if base64Data != nil && dataMimeType != nil {
 		data, err := base64.StdEncoding.DecodeString(*base64Data)
 		if err != nil {
@@ -81,7 +78,6 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
 
-	// Set up the model with tools and start a chat session
 	model := gc.Client.GenerativeModel(gc.ModelName)
 	if temperature != nil {
 		model.SetTemperature(*temperature)
@@ -89,44 +85,46 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 	model.Tools = gc.Tools
 	session := model.StartChat()
 
-	// Submit the multimodal query and process the result
 	res, err := session.SendMessage(ctx, genai.Text(prompt))
 	if err != nil {
 		return "", fmt.Errorf("failed to send message: %v", err)
 	}
 
-	// Handle function calls if present
-	for _, part := range res.Candidates[0].Content.Parts {
-		if funcall, ok := part.(genai.FunctionCall); ok {
-			// Invoke the user-defined function using reflection
-			responseData, err := gc.invokeFunction(funcall.Name, funcall.Args)
-			if err != nil {
-				return "", fmt.Errorf("failed to handle function call: %v", err)
-			}
-			// Send the function response back to the model
-			res, err = session.SendMessage(ctx, genai.FunctionResponse{
-				Name:     funcall.Name,
-				Response: responseData,
-			})
-			if err != nil {
-				return "", fmt.Errorf("failed to send function response: %v", err)
-			}
-			var (
-				finalResult string
-				stringPart  string
-			)
-			// Process the final response from the LLM
-			for _, part := range res.Candidates[0].Content.Parts {
-				stringPart = fmt.Sprintf("%v", part)
-				if stringPart != "" {
-					finalResult += fmt.Sprintf("%s\n", stringPart)
+	for _, candidate := range res.Candidates {
+		for _, part := range candidate.Content.Parts {
+			if funcall, ok := part.(genai.FunctionCall); ok {
+				responseData, err := gc.invokeFunction(funcall.Name, funcall.Args)
+				if err != nil {
+					return "", fmt.Errorf("failed to handle function call: %v", err)
 				}
+
+				if callback != nil {
+					responseData, err = callback(responseData)
+					if err != nil {
+						return "", fmt.Errorf("callback processing failed: %v", err)
+					}
+				}
+
+				res, err = session.SendMessage(ctx, genai.FunctionResponse{
+					Name:     funcall.Name,
+					Response: responseData,
+				})
+				if err != nil {
+					return "", fmt.Errorf("failed to send function response: %v", err)
+				}
+
+				var finalResult strings.Builder
+				for _, part := range res.Candidates[0].Content.Parts {
+					if textPart, ok := part.(genai.Text); ok {
+						finalResult.WriteString(string(textPart))
+						finalResult.WriteString("\n")
+					}
+				}
+				return strings.TrimSpace(finalResult.String()), nil
 			}
-			return strings.TrimSpace(finalResult), nil
 		}
 	}
 
-	// Handle the usual case where no function call is made
 	result, err := gc.SubmitToClient(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to process response: %v", err)
@@ -135,7 +133,60 @@ func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *stri
 	return strings.TrimSpace(result), nil
 }
 
-// invokeFunction uses reflection to call the appropriate user-defined function based on the AI's request
+// MultiQueryWithSequentialCallbacks handles multiple function calls in sequence, using callback functions to manage responses.
+func (gc *GeminiClient) MultiQueryWithSequentialCallbacks(prompt string, callbacks map[string]FunctionCallHandler) (string, error) {
+	if strings.TrimSpace(prompt) == "" {
+		return "", ErrEmptyPrompt
+	}
+
+	gc.ClearParts()
+	gc.AddText(prompt)
+
+	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
+	defer cancel()
+
+	model := gc.Client.GenerativeModel(gc.ModelName)
+	model.Tools = gc.Tools
+	session := model.StartChat()
+
+	res, err := session.SendMessage(ctx, genai.Text(prompt))
+	if err != nil {
+		return "", fmt.Errorf("failed to send message: %v", err)
+	}
+
+	for _, candidate := range res.Candidates {
+		for _, part := range candidate.Content.Parts {
+			if funcall, ok := part.(genai.FunctionCall); ok {
+				handler, exists := callbacks[funcall.Name]
+				if !exists {
+					return "", fmt.Errorf("no handler found for function: %s", funcall.Name)
+				}
+
+				responseData, err := handler(funcall.Args)
+				if err != nil {
+					return "", fmt.Errorf("handler error for function %s: %v", funcall.Name, err)
+				}
+
+				res, err = session.SendMessage(ctx, genai.FunctionResponse{
+					Name:     funcall.Name,
+					Response: responseData,
+				})
+				if err != nil {
+					return "", fmt.Errorf("failed to send function response: %v", err)
+				}
+			}
+		}
+	}
+
+	finalResult, err := gc.SubmitToClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to process final response: %v", err)
+	}
+
+	return strings.TrimSpace(finalResult), nil
+}
+
+// invokeFunction uses reflection to call the appropriate user-defined function based on the AI's request.
 func (gc *GeminiClient) invokeFunction(name string, args map[string]any) (map[string]any, error) {
 	fn, exists := gc.Functions[name]
 	if !exists {
@@ -144,7 +195,6 @@ func (gc *GeminiClient) invokeFunction(name string, args map[string]any) (map[st
 
 	fnType := fn.Type()
 
-	// Prepare the input arguments
 	in := make([]reflect.Value, fnType.NumIn())
 	for i := 0; i < fnType.NumIn(); i++ {
 		paramName := fmt.Sprintf("param%d", i+1)
@@ -155,10 +205,8 @@ func (gc *GeminiClient) invokeFunction(name string, args map[string]any) (map[st
 		in[i] = reflect.ValueOf(argValue)
 	}
 
-	// Call the function
 	out := fn.Call(in)
 
-	// Prepare the return values as a map
 	result := make(map[string]any)
 	for i := 0; i < len(out); i++ {
 		result[fmt.Sprintf("return%d", i+1)] = out[i].Interface()
@@ -167,7 +215,7 @@ func (gc *GeminiClient) invokeFunction(name string, args map[string]any) (map[st
 	return result, nil
 }
 
-// mapGoTypeToGenaiType maps Go types to the corresponding genai.Schema Type values
+// mapGoTypeToGenaiType maps Go types to the corresponding genai.Schema Type values.
 func mapGoTypeToGenaiType(goType reflect.Type) genai.Type {
 	switch goType.Kind() {
 	case reflect.String:
@@ -178,11 +226,12 @@ func mapGoTypeToGenaiType(goType reflect.Type) genai.Type {
 		return genai.TypeNumber
 	case reflect.Bool:
 		return genai.TypeBoolean
-	default: // default to a string type
+	default:
 		return genai.TypeString
 	}
 }
 
+// ClearToolsAndFunctions clears all registered tools and functions.
 func (gc *GeminiClient) ClearToolsAndFunctions() {
 	gc.Functions = make(map[string]reflect.Value)
 	gc.Tools = []*genai.Tool{}

@@ -2,6 +2,7 @@ package simplegemini
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"reflect"
@@ -76,7 +77,7 @@ func NewCustom(modelName, multiModalModelName, projectLocation, projectID string
 }
 
 func New(modelName string, temperature float32) (*GeminiClient, error) {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
 	return NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, defaultProjectID, temperature, defaultTimeout)
 }
 
@@ -93,7 +94,7 @@ func NewText(modelName, projectLocation, projectID string, temperature float32) 
 }
 
 func MustNewText(modelName string, temperature float32) *GeminiClient {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
 	gc, err := NewText(modelName, defaultProjectLocation, defaultProjectID, temperature)
 	if err != nil {
 		panic(err)
@@ -102,12 +103,12 @@ func MustNewText(modelName string, temperature float32) *GeminiClient {
 }
 
 func NewWithTimeout(modelName string, temperature float32, timeout time.Duration) (*GeminiClient, error) {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
 	return NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, defaultProjectID, temperature, timeout)
 }
 
 func MustNewWithTimeout(modelName string, temperature float32, timeout time.Duration) *GeminiClient {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
 	gc, err := NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, defaultProjectID, temperature, timeout)
 	if err != nil {
 		panic(err)
@@ -115,8 +116,94 @@ func MustNewWithTimeout(modelName string, temperature float32, timeout time.Dura
 	return gc
 }
 
+// MultiQuery processes a prompt with optional base64-encoded data and MIME type for the data.
+func (gc *GeminiClient) MultiQuery(prompt string, base64Data, dataMimeType *string, temperature *float32) (string, error) {
+	if strings.TrimSpace(prompt) == "" {
+		return "", ErrEmptyPrompt
+	}
+
+	gc.ClearParts()
+	gc.AddText(prompt)
+
+	// If base64Data and dataMimeType are provided, decode the data and add it to the multimodal instance.
+	if base64Data != nil && dataMimeType != nil {
+		data, err := base64.StdEncoding.DecodeString(*base64Data)
+		if err != nil {
+			return "", fmt.Errorf("failed to decode base64 data: %v", err)
+		}
+		gc.AddData(*dataMimeType, data)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
+	defer cancel()
+
+	// Set up the model with tools and start a chat session.
+	model := gc.Client.GenerativeModel(gc.ModelName)
+	if temperature != nil {
+		model.SetTemperature(*temperature)
+	}
+	model.Tools = gc.Tools
+	session := model.StartChat()
+
+	// Submit the multimodal query and process the result.
+	res, err := session.SendMessage(ctx, genai.Text(prompt))
+	if err != nil {
+		return "", fmt.Errorf("failed to send message: %v", err)
+	}
+
+	// Handle function calls if present.
+	for _, candidate := range res.Candidates {
+		for _, part := range candidate.Content.Parts {
+			if funcall, ok := part.(genai.FunctionCall); ok {
+				// Invoke the user-defined function using reflection.
+				responseData, err := gc.invokeFunction(funcall.Name, funcall.Args)
+				if err != nil {
+					return "", fmt.Errorf("failed to handle function call: %v", err)
+				}
+
+				// Send the function response back to the model.
+				res, err = session.SendMessage(ctx, genai.FunctionResponse{
+					Name:     funcall.Name,
+					Response: responseData,
+				})
+				if err != nil {
+					return "", fmt.Errorf("failed to send function response: %v", err)
+				}
+
+				var finalResult strings.Builder
+				// Process the final response from the LLM.
+				for _, part := range res.Candidates[0].Content.Parts {
+					if textPart, ok := part.(genai.Text); ok {
+						finalResult.WriteString(string(textPart))
+						finalResult.WriteString("\n")
+					}
+				}
+				return strings.TrimSpace(finalResult.String()), nil
+			}
+		}
+	}
+
+	// Handle the usual case where no function call is made.
+	result, err := gc.SubmitToClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to process response: %v", err)
+	}
+
+	return strings.TrimSpace(result), nil
+}
+
 func (gc *GeminiClient) Query(prompt string) (string, error) {
 	return gc.MultiQuery(prompt, nil, nil, nil)
+}
+
+// QueryWithCallbacks allows querying with a prompt and processing function calls via a callback handler.
+func (gc *GeminiClient) QueryWithCallbacks(prompt string, callback FunctionCallHandler) (string, error) {
+	return gc.MultiQueryWithCallbacks(prompt, nil, nil, nil, callback)
+}
+
+// QueryWithSequentialCallbacks allows querying with a prompt and processing multiple function calls in sequence via a map of callback handlers.
+func (gc *GeminiClient) QueryWithSequentialCallbacks(prompt string, callbacks map[string]FunctionCallHandler) (string, error) {
+	return gc.MultiQueryWithSequentialCallbacks(prompt, callbacks)
 }
 
 func Ask(prompt string, temperature float32) (string, error) {
@@ -142,7 +229,7 @@ func MustAsk(prompt string, temperature float32) string {
 // New creates a new MultiModal instance with a specified model name and temperature,
 // initializing it with default values for parts, trim, and verbose settings.
 func NewMultiModal(modelName string, temperature float32) (*GeminiClient, error) {
-	const projectID = "" // The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead
+	const projectID = "" // The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
 	return NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, projectID, temperature, defaultTimeout)
 }
 
@@ -162,7 +249,7 @@ func (gc *GeminiClient) SetTrim(trim bool) {
 	gc.Trim = trim
 }
 
-// CountTextTokensWithClient will count the tokens in the given text
+// CountTextTokensWithClient will count the tokens in the given text.
 func (gc *GeminiClient) CountTextTokensWithClient(ctx context.Context, client *genai.Client, text string) (int, error) {
 	model := client.GenerativeModel(gc.ModelName)
 	resp, err := model.CountTokens(ctx, genai.Text(text))
@@ -172,7 +259,7 @@ func (gc *GeminiClient) CountTextTokensWithClient(ctx context.Context, client *g
 	return int(resp.TotalTokens), nil
 }
 
-// CountTokensWithClient will count the tokens in the current multimodal prompt
+// CountTokensWithClient will count the tokens in the current multimodal prompt.
 func (gc *GeminiClient) CountTokensWithClient(ctx context.Context) (int, error) {
 	model := gc.Client.GenerativeModel(gc.ModelName)
 	var sum int
@@ -194,21 +281,21 @@ func (gc *GeminiClient) SubmitToClient(ctx context.Context) (result string, err 
 			err = fmt.Errorf("panic occurred: %v", r)
 		}
 	}()
-	// Configure the model
+	// Configure the model.
 	model := gc.Client.GenerativeModel(gc.ModelName)
 	model.SetTemperature(gc.Temperature)
-	// Then pass in the parts and generate a response
+	// Pass in the parts and generate a response.
 	res, err := model.GenerateContent(ctx, gc.Parts...)
 	if err != nil {
 		return "", fmt.Errorf("unable to generate contents: %v", err)
 	}
-	// Then examine the response, defensively
+	// Examine the response defensively.
 	if res == nil || len(res.Candidates) == 0 || res.Candidates[0] == nil ||
 		res.Candidates[0].Content == nil || res.Candidates[0].Content.Parts == nil ||
 		len(res.Candidates[0].Content.Parts) == 0 {
 		return "", errors.New("empty response from model")
 	}
-	// And return the result as a string
+	// Return the result as a string.
 	result = fmt.Sprintf("%s\n", res.Candidates[0].Content.Parts[0])
 	if gc.Trim {
 		return strings.TrimSpace(result), nil
@@ -232,14 +319,15 @@ func (gc *GeminiClient) CountTokens() (int, error) {
 	return gc.CountTokensWithClient(ctx)
 }
 
-// CountTextTokens tries to count the number of tokens in the given prompt, using the VertexAI API
+// CountTextTokens tries to count the number of tokens in the given prompt, using the Vertex AI API.
 func (gc *GeminiClient) CountTextTokens(prompt string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
 	return gc.CountTextTokensWithClient(ctx, gc.Client, prompt)
 }
 
+// Clear clears the prompt parts, tools, and functions registered with the client.
 func (gc *GeminiClient) Clear() {
-	gc.ClearParts() // Not really needed, since Query also calls this
+	gc.ClearParts() // Not really needed, since Query also calls this.
 	gc.ClearToolsAndFunctions()
 }
