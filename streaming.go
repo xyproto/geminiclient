@@ -48,9 +48,6 @@ func (gc *GeminiClient) SubmitToClientStreaming(ctx context.Context, streamCallb
 				switch p := part.(type) {
 				case genai.Text:
 					partialResult := string(p)
-					if gc.Trim {
-						partialResult = strings.TrimSpace(partialResult)
-					}
 					streamCallback(partialResult)
 					result += partialResult
 				default:
