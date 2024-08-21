@@ -16,7 +16,7 @@ A simple and fun way to use Gemini.
 ## Example use
 
 1. Run `gcloud auth application-default login`, if needed.
-2. Get the Google Project ID at https://console.cloud.google.com/. The Vertex AI API might also need to be enabled.
+2. Get the Google Project ID at https://console.cloud.google.com/.
 3. `export GCP_PROJECT=123`, where "123" is your own Google Project ID.
 4. (optionally) `export GCP_LOCATION=us-west1`, if "us-west1" is the location you prefer.
 5. Create a directory for this experiment, for instance: `mkdir -p ~/geminitest && cd ~/geminitest`.
@@ -47,6 +47,10 @@ Black and white patches,
 Chewing grass in sunlit fields,
 Mooing gentle song.
 ```
+
+## A note about Google Cloud
+
+If an application that uses `simplegemini` is deployed to ie. Google Cloud Run, then creating a new service account with "Vertex AI User" permissions is probably needed. This can be created in the "IAM & Admin" section. The service account can then be selected when deploying to Cloud Run.
 
 ## Function calling / tool use
 
