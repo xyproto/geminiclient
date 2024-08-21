@@ -19,12 +19,13 @@ func TestSubmitToClientStreaming(t *testing.T) {
 	ctx := context.Background()
 
 	// Define a prompt and add it as text to the GeminiClient
-	prompt := "Write a story about a magic backpack."
+	prompt := "Write a story about a magic backpack, around 50 words. Make sure to include the phrase \"magic backpack\"."
 	gc.AddText(prompt)
 
 	// Capture the streamed content
 	var streamedContent strings.Builder
 	streamCallback := func(part string) {
+		fmt.Println("Streaming part:", part) // Debugging output
 		streamedContent.WriteString(part)
 	}
 
@@ -41,8 +42,8 @@ func TestSubmitToClientStreaming(t *testing.T) {
 
 	// Optional: Check if the streamed content contains expected text
 	if !strings.Contains(streamedContent.String(), "magic backpack") {
-		t.Fatalf("Expected streamed content to contain 'magic backpack', but it didn't")
+		t.Fatalf("Expected streamed content to contain 'magic backpack', but it didn't. Actual content: %s", streamedContent.String())
 	}
 
-	fmt.Println("streamed content: " + streamedContent.String())
+	fmt.Println("Streamed content:", streamedContent.String())
 }
