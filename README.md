@@ -241,6 +241,6 @@ These environment variables are supported:
 
 ## General info
 
-* Version: 1.3.0
+* Version: 1.4.0
 * License: Apache 2
 * Author: Alexander F. Rødseth
