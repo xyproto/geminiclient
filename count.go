@@ -2,28 +2,22 @@ package simplegemini
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"strings"
 
 	"cloud.google.com/go/vertexai/genai"
 )
 
-// CountTextTokensWithClient will count the tokens in the given text.
-func (gc *GeminiClient) CountTextTokensWithClient(ctx context.Context, client *genai.Client, text string) (int, error) {
-	model := client.GenerativeModel(gc.ModelName)
-	resp, err := model.CountTokens(ctx, genai.Text(text))
+// CountPromptTokensWithClient counts the tokens in the given text prompt using a specific client and model.
+func (gc *GeminiClient) CountPromptTokensWithClient(ctx context.Context, client *genai.Client, prompt, modelName string) (int, error) {
+	model := client.GenerativeModel(modelName)
+	resp, err := model.CountTokens(ctx, genai.Text(prompt))
 	if err != nil {
 		return 0, err
 	}
 	return int(resp.TotalTokens), nil
 }
 
-// CountTextTokensWithModel will count the tokens in the given text and model
-func (gc *GeminiClient) CountTextTokensWithModel(prompt, modelName string) (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
-	defer cancel()
-
+// CountPromptTokensWithModel counts the tokens in the given text prompt using the specified model within the default client.
+func (gc *GeminiClient) CountPromptTokensWithModel(ctx context.Context, prompt, modelName string) (int, error) {
 	model := gc.Client.GenerativeModel(modelName)
 	resp, err := model.CountTokens(ctx, genai.Text(prompt))
 	if err != nil {
@@ -32,79 +26,57 @@ func (gc *GeminiClient) CountTextTokensWithModel(prompt, modelName string) (int,
 	return int(resp.TotalTokens), nil
 }
 
-// CountTokensWithContext will count the tokens in the current multimodal prompt.
-func (gc *GeminiClient) CountTokensWithContext(ctx context.Context) (int, error) {
+// CountPromptTokens counts the number of tokens in the given text prompt using the default client and model.
+func (gc *GeminiClient) CountPromptTokens(prompt string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
+	defer cancel()
+	return gc.CountPromptTokensWithModel(ctx, prompt, gc.ModelName)
+}
+
+// CountPartTokensWithContext counts the tokens in the current multimodal parts using the default client and model.
+func (gc *GeminiClient) CountPartTokensWithContext(ctx context.Context) (int, error) {
 	model := gc.Client.GenerativeModel(gc.ModelName)
-	var sum int
+	var totalTokens int
 	for _, part := range gc.Parts {
 		resp, err := model.CountTokens(ctx, part)
 		if err != nil {
-			return sum, err
+			return totalTokens, err
 		}
-		sum += int(resp.TotalTokens)
+		totalTokens += int(resp.TotalTokens)
 	}
-	return sum, nil
+	return totalTokens, nil
 }
 
-// SubmitToClient sends all added parts to the specified Vertex AI model for processing,
-// returning the model's response. It supports temperature configuration and response trimming.
-func (gc *GeminiClient) SubmitToClient(ctx context.Context) (result string, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("panic occurred: %v", r)
-		}
-	}()
-	// Configure the model.
-	model := gc.Client.GenerativeModel(gc.ModelName)
-	model.SetTemperature(gc.Temperature)
-	// Pass in the parts and generate a response.
-	res, err := model.GenerateContent(ctx, gc.Parts...)
-	if err != nil {
-		return "", fmt.Errorf("unable to generate contents: %v", err)
-	}
-	// Examine the response defensively.
-	if res == nil || len(res.Candidates) == 0 || res.Candidates[0] == nil ||
-		res.Candidates[0].Content == nil || res.Candidates[0].Content.Parts == nil ||
-		len(res.Candidates[0].Content.Parts) == 0 {
-		return "", errors.New("empty response from model")
-	}
-	// Return the result as a string.
-	result = fmt.Sprintf("%s\n", res.Candidates[0].Content.Parts[0])
-	if gc.Trim {
-		return strings.TrimSpace(result), nil
-	}
-	return result, nil
-}
-
-// Submit sends all added parts to the specified Vertex AI model for processing,
-// returning the model's response. It supports temperature configuration and response trimming.
-// This function creates a temporary client and is not meant to be used within Google Cloud (use SubmitToClient instead).
-func (gc *GeminiClient) Submit() (string, error) {
+// CountPartTokens counts the tokens in the current multimodal parts using the default client, model, and a new context.
+func (gc *GeminiClient) CountPartTokens() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
-	return gc.SubmitToClient(ctx)
+	return gc.CountPartTokensWithContext(ctx)
 }
 
-// CountTokens creates a new client and then counts the tokens in the current multimodal prompt.
-func (gc *GeminiClient) CountTokens() (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
-	defer cancel()
-	return gc.CountTokensWithContext(ctx)
-}
-
-// CountTextTokens tries to count the number of tokens in the given prompt, using the Vertex AI API.
-func (gc *GeminiClient) CountTextTokens(prompt string) (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
-	defer cancel()
-	return gc.CountTextTokensWithClient(ctx, gc.Client, prompt)
-}
-
-// CountTextTokensWithClient will count the tokens in the given text
-func (gc *GeminiClient) CountTextTokensWithClient(ctx context.Context, client *genai.Client, text string) (int, error) {
-	model := client.GenerativeModel(gc.ModelName)
+// CountTextTokensWithClient counts the tokens in the given text using a specific client and model.
+func (gc *GeminiClient) CountTextTokensWithClient(ctx context.Context, client *genai.Client, text, modelName string) (int, error) {
+	model := client.GenerativeModel(modelName)
 	resp, err := model.CountTokens(ctx, genai.Text(text))
 	if err != nil {
 		return 0, err
 	}
 	return int(resp.TotalTokens), nil
+}
+
+// CountTextTokensWithModel counts the tokens in the given text using the specified model within the default client.
+func (gc *GeminiClient) CountTextTokensWithModel(ctx context.Context, text, modelName string) (int, error) {
+	model := gc.Client.GenerativeModel(modelName)
+	resp, err := model.CountTokens(ctx, genai.Text(text))
+	if err != nil {
+		return 0, err
+	}
+	return int(resp.TotalTokens), nil
+}
+
+// CountTextTokens counts the tokens in the given text using the default client and model.
+func (gc *GeminiClient) CountTextTokens(text string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
+	defer cancel()
+	return gc.CountTextTokensWithModel(ctx, text, gc.ModelName)
 }
