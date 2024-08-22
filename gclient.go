@@ -259,8 +259,21 @@ func (gc *GeminiClient) CountTextTokensWithClient(ctx context.Context, client *g
 	return int(resp.TotalTokens), nil
 }
 
-// CountTokensWithClient will count the tokens in the current multimodal prompt.
-func (gc *GeminiClient) CountTokensWithClient(ctx context.Context) (int, error) {
+// CountTextTokensWithModel will count the tokens in the given text and model
+func (gc *GeminiClient) CountTextTokensWithModel(prompt, modelName string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
+	defer cancel()
+
+	model := gc.Client.GenerativeModel(modelName)
+	resp, err := model.CountTokens(ctx, genai.Text(prompt))
+	if err != nil {
+		return 0, err
+	}
+	return int(resp.TotalTokens), nil
+}
+
+// CountTokensWithContext will count the tokens in the current multimodal prompt.
+func (gc *GeminiClient) CountTokensWithContext(ctx context.Context) (int, error) {
 	model := gc.Client.GenerativeModel(gc.ModelName)
 	var sum int
 	for _, part := range gc.Parts {
@@ -316,7 +329,7 @@ func (gc *GeminiClient) Submit() (string, error) {
 func (gc *GeminiClient) CountTokens() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
-	return gc.CountTokensWithClient(ctx)
+	return gc.CountTokensWithContext(ctx)
 }
 
 // CountTextTokens tries to count the number of tokens in the given prompt, using the Vertex AI API.
