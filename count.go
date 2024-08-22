@@ -47,8 +47,8 @@ func (gc *GeminiClient) CountPartTokensWithContext(ctx context.Context) (int, er
 	return totalTokens, nil
 }
 
-// CountPartTokens counts the tokens in the current multimodal parts using the default client, model, and a new context.
-func (gc *GeminiClient) CountPartTokens() (int, error) {
+// CountTokens counts the tokens in the current multimodal parts using the default client, model, and a new context.
+func (gc *GeminiClient) CountTokens() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), gc.Timeout)
 	defer cancel()
 	return gc.CountPartTokensWithContext(ctx)
