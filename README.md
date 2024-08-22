@@ -12,6 +12,7 @@ A simple and fun way to use Gemini.
 * Supports tool / function calling where you can supply custom Go functions to the Gemini client, and Gemini can call the functions as needed (but only for 1 tool/function, for now).
 * This package is a work in progress!
 * The only currently known issue is that when adding more than 1 tool/function, it appears to not work, ref. the `multicall` branch.
+* The functions starting with `Must` are alternatives to the ones that return a value and an error. These functions will just return the value, but panic if it fails. This is handy for testing and quick examples, but larger applications should probably not use them.
 
 ## Example use
 
