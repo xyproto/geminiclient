@@ -8,3 +8,4 @@ cmd/frog/frog
 cmd/haiku/haiku
 cmd/json/json
 include.txt
+scripts/
