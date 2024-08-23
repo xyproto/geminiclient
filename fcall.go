@@ -215,6 +215,12 @@ func (gc *GeminiClient) invokeFunction(name string, args map[string]any) (map[st
 	return result, nil
 }
 
+// ClearToolsAndFunctions clears all registered tools and functions.
+func (gc *GeminiClient) ClearToolsAndFunctions() {
+	gc.Functions = make(map[string]reflect.Value)
+	gc.Tools = []*genai.Tool{}
+}
+
 // mapGoTypeToGenaiType maps Go types to the corresponding genai.Schema Type values.
 func mapGoTypeToGenaiType(goType reflect.Type) genai.Type {
 	switch goType.Kind() {
@@ -229,10 +235,4 @@ func mapGoTypeToGenaiType(goType reflect.Type) genai.Type {
 	default:
 		return genai.TypeString
 	}
-}
-
-// ClearToolsAndFunctions clears all registered tools and functions.
-func (gc *GeminiClient) ClearToolsAndFunctions() {
-	gc.Functions = make(map[string]reflect.Value)
-	gc.Tools = []*genai.Tool{}
 }
