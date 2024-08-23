@@ -43,7 +43,7 @@ const (
 )
 
 var (
-	ErrGoogleCloudProjectID = errors.New("please set GCP_PROJECT or PROJECT_ID to your Google Cloud project ID")
+	ErrGoogleCloudProjectID = errors.New("please set GCP_PROJECT_ID or PROJECT_ID to your Google Cloud project ID")
 )
 
 func NewCustom(modelName, multiModalModelName, projectLocation, projectID string, temperature float32, timeout time.Duration) (*GeminiClient, error) {
@@ -51,7 +51,7 @@ func NewCustom(modelName, multiModalModelName, projectLocation, projectID string
 		ModelName:           env.Str("MODEL_NAME", modelName),
 		MultiModalModelName: env.Str("MULTI_MODAL_MODEL_NAME", multiModalModelName),
 		ProjectLocation:     env.StrAlt("GCP_LOCATION", "PROJECT_LOCATION", projectLocation),
-		ProjectID:           env.StrAlt("GCP_PROJECT", "PROJECT_ID", projectID),
+		ProjectID:           env.StrAlt("GCP_PROJECT_ID", "PROJECT_ID", projectID),
 		Timeout:             timeout,
 		Temperature:         temperature,
 		Tools:               []*genai.Tool{},
@@ -77,7 +77,7 @@ func NewCustom(modelName, multiModalModelName, projectLocation, projectID string
 }
 
 func New(modelName string, temperature float32) (*GeminiClient, error) {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT_ID or $PROJECT_ID instead.
 	return NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, defaultProjectID, temperature, defaultTimeout)
 }
 
@@ -94,7 +94,7 @@ func NewText(modelName, projectLocation, projectID string, temperature float32) 
 }
 
 func MustNewText(modelName string, temperature float32) *GeminiClient {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT_ID or $PROJECT_ID instead.
 	gc, err := NewText(modelName, defaultProjectLocation, defaultProjectID, temperature)
 	if err != nil {
 		panic(err)
@@ -103,12 +103,12 @@ func MustNewText(modelName string, temperature float32) *GeminiClient {
 }
 
 func NewWithTimeout(modelName string, temperature float32, timeout time.Duration) (*GeminiClient, error) {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT_ID or $PROJECT_ID instead.
 	return NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, defaultProjectID, temperature, timeout)
 }
 
 func MustNewWithTimeout(modelName string, temperature float32, timeout time.Duration) *GeminiClient {
-	// The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
+	// The Google Cloud Project ID is fetched from $GCP_PROJECT_ID or $PROJECT_ID instead.
 	gc, err := NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, defaultProjectID, temperature, timeout)
 	if err != nil {
 		panic(err)
@@ -229,7 +229,7 @@ func MustAsk(prompt string, temperature float32) string {
 // New creates a new MultiModal instance with a specified model name and temperature,
 // initializing it with default values for parts, trim, and verbose settings.
 func NewMultiModal(modelName string, temperature float32) (*GeminiClient, error) {
-	const projectID = "" // The Google Cloud Project ID is fetched from $GCP_PROJECT or $PROJECT_ID instead.
+	const projectID = "" // The Google Cloud Project ID is fetched from $GCP_PROJECT_ID or $PROJECT_ID instead.
 	return NewCustom(modelName, defaultMultiModalModelName, defaultProjectLocation, projectID, temperature, defaultTimeout)
 }
 

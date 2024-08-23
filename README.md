@@ -235,7 +235,7 @@ func main() {
 
 These environment variables are supported:
 
-* `GCP_PROJECT` or `PROJECT_ID` for the Google Cloud Project ID
+* `GCP_PROJECT_ID` or `PROJECT_ID` for the Google Cloud Project ID
 * `GCP_LOCATION` or `PROJECT_LOCATION` for the Google Cloud Project location (like `us-west1`)
 * `MODEL_NAME` for the Gemini model name (like `gemini-1.5-flash` or `gemini-1.5-pro`)
 * `MULTI_MODAL_MODEL_NAME` for the Gemini multi-modal name (like `gemini-1.0-pro-vision`)

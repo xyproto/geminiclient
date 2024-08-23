@@ -14,7 +14,7 @@ var projectID string
 
 func TestMain(m *testing.M) {
 	// Check the project ID once before running any tests
-	projectID = env.StrAlt("GCP_PROJECT", "PROJECT_ID", "")
+	projectID = env.StrAlt("GCP_PROJECT_ID", "PROJECT_ID", "")
 	if projectID == "" {
 		fmt.Println(simplegemini.ErrGoogleCloudProjectID)
 		os.Exit(1)
