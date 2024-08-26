@@ -1,14 +1,14 @@
-package simplegemini_test
+package geminiclient_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/xyproto/simplegemini"
+	"github.com/xyproto/geminiclient"
 )
 
 func TestAddImage(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Create a temporary image file for testing
 	tmpfile, err := os.CreateTemp("", "testimage.png")
@@ -38,7 +38,7 @@ func TestAddImage(t *testing.T) {
 }
 
 func TestMustAddImageInvalidPath(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Attempt to add an image from an invalid path
 	defer func() {
@@ -50,7 +50,7 @@ func TestMustAddImageInvalidPath(t *testing.T) {
 }
 
 func TestAddURI(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	gc.AddURI("gs://generativeai-downloads/images/scones.jpg")
 
@@ -61,7 +61,7 @@ func TestAddURI(t *testing.T) {
 }
 
 func TestAddData(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Test adding data
 	data := []byte("Some data")
@@ -74,7 +74,7 @@ func TestAddData(t *testing.T) {
 }
 
 func TestAddText(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Test adding text
 	gc.AddText("This is a prompt")
@@ -86,7 +86,7 @@ func TestAddText(t *testing.T) {
 }
 
 func TestClearParts(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Add some parts
 	gc.AddText("Text part")

@@ -1,4 +1,4 @@
-package simplegemini_test
+package geminiclient_test
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xyproto/simplegemini"
+	"github.com/xyproto/geminiclient"
 )
 
 // TestSubmitToClientStreaming tests the SubmitToClientStreaming function.
 func TestSubmitToClientStreaming(t *testing.T) {
 	// Initialize a new GeminiClient
-	gc := simplegemini.MustNewWithTimeout("gemini-1.5-pro", 0.0, 10*time.Second)
+	gc := geminiclient.MustNewWithTimeout("gemini-1.5-pro", 0.0, 10*time.Second)
 
 	// Create a context
 	ctx := context.Background()

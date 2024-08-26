@@ -1,4 +1,4 @@
-package simplegemini
+package geminiclient
 
 import (
 	"fmt"

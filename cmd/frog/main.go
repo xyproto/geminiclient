@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/xyproto/simplegemini"
+	"github.com/xyproto/geminiclient"
 	"github.com/xyproto/wordwrap"
 )
 
@@ -15,7 +15,7 @@ func main() {
 		descriptionPrompt   = "Describe what is common for these two images."
 	)
 
-	gc, err := simplegemini.NewMultiModal(multiModalModelName, temperature)
+	gc, err := geminiclient.NewMultiModal(multiModalModelName, temperature)
 	if err != nil {
 		log.Fatalf("Could not initialize the Gemini client with the %s model: %v\n", multiModalModelName, err)
 	}

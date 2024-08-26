@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/xyproto/simplegemini"
+	"github.com/xyproto/geminiclient"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 		timeout     = 10 * time.Second
 	)
 
-	gc, err := simplegemini.NewWithTimeout(modelName, temperature, timeout)
+	gc, err := geminiclient.NewWithTimeout(modelName, temperature, timeout)
 	if err != nil {
 		log.Fatalln(err)
 	}

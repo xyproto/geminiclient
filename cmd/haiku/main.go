@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/xyproto/simplegemini"
+	"github.com/xyproto/geminiclient"
 )
 
 func main() {
-	fmt.Println(simplegemini.MustAsk("Write a haiku about cows.", 0.4))
+	fmt.Println(geminiclient.MustAsk("Write a haiku about cows.", 0.4))
 }

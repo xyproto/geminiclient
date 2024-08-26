@@ -1,8 +1,8 @@
-[![Build](https://github.com/xyproto/simplegemini/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyproto/simplegemini/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/xyproto/simplegemini)](https://goreportcard.com/report/github.com/xyproto/simplegemini) [![License](https://img.shields.io/badge/license-Apache2-green.svg?style=flat)](https://raw.githubusercontent.com/xyproto/simplegemini/main/LICENSE)
+[![Build](https://github.com/xyproto/geminiclient/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyproto/geminiclient/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/xyproto/geminiclient)](https://goreportcard.com/report/github.com/xyproto/geminiclient) [![License](https://img.shields.io/badge/license-Apache2-green.svg?style=flat)](https://raw.githubusercontent.com/xyproto/geminiclient/main/LICENSE)
 
-# Simple Gemini
+# Gemini Client
 
-A simple and fun way to use Gemini.
+A simple way to use the Gemini API.
 
 ## Features and limitations
 
@@ -30,16 +30,16 @@ package main
 import (
     "fmt"
 
-    "github.com/xyproto/simplegemini"
+    "github.com/xyproto/geminiclient"
 )
 
 func main() {
-    fmt.Println(simplegemini.MustAsk("Write a haiku about cows.", 0.4))
+    fmt.Println(geminiclient.MustAsk("Write a haiku about cows.", 0.4))
 }
 ```
 
 7. Prepare a simple `go.mod` project file with ie. `go mod init cows`
-8. Fetch the dependencies (this simplegemini package) with `go mod tidy`
+8. Fetch the dependencies (this geminiclient package) with `go mod tidy`
 9. Build and run the executable: `go build && ./cows`
 10. Observe the output, that should look a bit like this:
 
@@ -51,7 +51,7 @@ Mooing gentle song.
 
 ## A note about Google Cloud
 
-If an application that uses `simplegemini` is deployed to ie. Google Cloud Run, then creating a new service account with "Vertex AI User" permissions is probably needed. This can be created in the "IAM & Admin" section. The service account can then be selected when deploying to Cloud Run.
+If an application that uses `geminiclient` is deployed to ie. Google Cloud Run, then creating a new service account with "Vertex AI User" permissions is probably needed. This can be created in the "IAM & Admin" section. The service account can then be selected when deploying to Cloud Run.
 
 ## Function calling / tool use
 
@@ -63,11 +63,11 @@ import (
     "log"
     "strings"
 
-    "github.com/xyproto/simplegemini"
+    "github.com/xyproto/geminiclient"
 )
 
 func main() {
-    gc := simplegemini.MustNew()
+    gc := geminiclient.MustNew()
 
     // Define a custom function for getting the weather, that Gemini can choose to call
     getWeatherRightNow := func(location string) string {
@@ -143,7 +143,7 @@ import (
     "fmt"
     "log"
 
-    "github.com/xyproto/simplegemini"
+    "github.com/xyproto/geminiclient"
     "github.com/xyproto/wordwrap"
 )
 
@@ -154,7 +154,7 @@ func main() {
         descriptionPrompt   = "Describe what is common for these two images."
     )
 
-    gc, err := simplegemini.NewMultiModal(multiModalModelName, temperature)
+    gc, err := geminiclient.NewMultiModal(multiModalModelName, temperature)
     if err != nil {
         log.Fatalf("Could not initialize the Gemini client with the %s model: %v\n", multiModalModelName, err)
     }
@@ -201,7 +201,7 @@ import (
     "log"
     "time"
 
-    "github.com/xyproto/simplegemini"
+    "github.com/xyproto/geminiclient"
 )
 
 func main() {
@@ -212,7 +212,7 @@ func main() {
         timeout     = 10 * time.Second
     )
 
-    gc, err := simplegemini.NewWithTimeout(modelName, temperature, timeout)
+    gc, err := geminiclient.NewWithTimeout(modelName, temperature, timeout)
     if err != nil {
         log.Fatalln(err)
     }

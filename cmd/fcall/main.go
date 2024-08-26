@@ -5,11 +5,11 @@ import (
 	"log"
 	"strings"
 
-	"github.com/xyproto/simplegemini"
+	"github.com/xyproto/geminiclient"
 )
 
 func main() {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Define a custom function for getting the weather, that Gemini can choose to call
 	getWeatherRightNow := func(location string) string {

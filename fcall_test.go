@@ -1,4 +1,4 @@
-package simplegemini_test
+package geminiclient_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/xyproto/env/v2"
-	"github.com/xyproto/simplegemini"
+	"github.com/xyproto/geminiclient"
 )
 
 var projectID string
@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 	// Check the project ID once before running any tests
 	projectID = env.StrAlt("GCP_PROJECT_ID", "PROJECT_ID", "")
 	if projectID == "" {
-		fmt.Println(simplegemini.ErrGoogleCloudProjectID)
+		fmt.Println(geminiclient.ErrGoogleCloudProjectID)
 		os.Exit(1)
 	}
 
@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCustomFunction(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Define a custom function for getting weather
 	getWeatherRightNow := func(location string) string {
@@ -61,7 +61,7 @@ func TestCustomFunction(t *testing.T) {
 }
 
 func TestReverseStringFunction(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Define a custom function for reversing a string
 	reverseString := func(input string) string {
@@ -95,7 +95,7 @@ func TestReverseStringFunction(t *testing.T) {
 }
 
 func TestNoFunctionsRegistered(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Query Gemini with a prompt without any registered functions
 	result, err := gc.Query("What is the capital of France? Reply with a single word.")
@@ -109,7 +109,7 @@ func TestNoFunctionsRegistered(t *testing.T) {
 }
 
 func TestInvalidFunctionRegistration(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Attempt to register an invalid function (non-function type)
 	err := gc.AddFunctionTool("invalid_tool", "This should fail", "not_a_function")
@@ -124,7 +124,7 @@ func TestInvalidFunctionRegistration(t *testing.T) {
 }
 
 func TestEmptyPrompt(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Query Gemini with an empty prompt
 	_, err := gc.Query("")
@@ -134,7 +134,7 @@ func TestEmptyPrompt(t *testing.T) {
 }
 
 func TestAddImageInvalidPath(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Attempt to add an image from an invalid path
 	err := gc.AddImage("/non/existent/path.png")
@@ -149,7 +149,7 @@ func TestAddImageInvalidPath(t *testing.T) {
 }
 
 func TestAddURLInvalid(t *testing.T) {
-	gc := simplegemini.MustNew()
+	gc := geminiclient.MustNew()
 
 	// Attempt to add a URL that does not exist
 	err := gc.AddURL("http://invalid.url/nonexistent.png")
