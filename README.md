@@ -19,7 +19,7 @@ A simple way to use the Gemini API.
 
 ## Example use
 
-1. Run `gcloud auth application-default login`, if needed.
+1. Run `gcloud auth login` and/or `gcloud auth application-default login`, if needed.
 2. Get the Google Project ID at https://console.cloud.google.com/.
 3. `export GCP_PROJECT=123`, where "123" is your own Google Project ID.
 4. (optionally) `export GCP_LOCATION=us-west1`, if "us-west1" is the location you prefer.
