@@ -1,4 +1,7 @@
-[![Build](https://github.com/xyproto/geminiclient/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyproto/geminiclient/actions/workflows/build.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/xyproto/geminiclient)](https://goreportcard.com/report/github.com/xyproto/geminiclient) [![License](https://img.shields.io/badge/license-Apache2-green.svg?style=flat)](https://raw.githubusercontent.com/xyproto/geminiclient/main/LICENSE)
+[![Build](https://github.com/xyproto/geminiclient/actions/workflows/build.yml/badge.svg)](https://github.com/xyproto/geminiclient/actions/workflows/build.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/xyproto/geminiclient)](https://goreportcard.com/report/github.com/xyproto/geminiclient)
+[![License](https://img.shields.io/badge/license-Apache2-green.svg?style=flat)](https://raw.githubusercontent.com/xyproto/geminiclient/main/LICENSE)
+
 
 # Gemini Client
 
